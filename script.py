@@ -3,6 +3,7 @@
 # PIL module is used to extract
 # pixels of image and modify it
 import json
+from pathlib import Path
 from PIL import Image
 
 
@@ -83,19 +84,27 @@ def encode_enc(newimg, data):
 
 
 # Encode data into image
-def encode(filePath, message, toPath, password = None):
+def encode(filePath, message, toPath, password = None, format = None):
     image = Image.open(filePath, "r")
 
     newimg = image.copy()
 
+    fileExtension = Path(filePath).suffix[1:]
+    if fileExtension and fileExtension in ("jpeg","jpg"):
+        newimg.convert("RGBA")
+
     data = json.dumps({"message": message, "password": password})
     encode_enc(newimg, data)
 
+    if format:
+        newimg.save(toPath, "png")
+        return 
+    
     newimg.save(toPath)
 
 
 # Decode the data in the image
-def decode(filePath, password=None):
+def decode(filePath, password=None, debug = False):
     image = Image.open(filePath, "r")
 
     data = ""
@@ -123,21 +132,8 @@ def decode(filePath, password=None):
         if pixels[-1] % 2 != 0:
             continue_ = False
             break
+
+    if debug:
+        print(data)
+
     return data
-
-# Main Function
-def main():
-    a = int(input(":: Welcome to Steganography ::\n" "1. Encode\n2. Decode\n"))
-    if a == 1:
-        encode()
-
-    elif a == 2:
-        print("Decoded Word : " + decode())
-    else:
-        raise Exception("Enter correct input")
-
-
-# Driver Code
-if __name__ == "__main__":
-    # Calling main function
-    main()
